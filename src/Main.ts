@@ -20,7 +20,6 @@ const fsSource = `
 `;
 
 const vtexSource = `
-    attribute vec2 a_texCoord;
     attribute vec2 a_position;
 
 
@@ -29,7 +28,8 @@ const vtexSource = `
     void main(){
 
         gl_Position = vec4(a_position,0,1);
-        v_texCoord = a_texCoord;
+        v_texCoord = vec2((a_position.x+1.0)/2.0, 1.0-(a_position.y+1.0)/2.0);
+      
     }
 `;
 
@@ -37,7 +37,7 @@ const ftexSource = `
     
     uniform sampler2D u_image;
 
-    varying lowp vec2 v_texCoord;
+    varying mediump vec2 v_texCoord;
 
     void main(){
         
@@ -160,7 +160,7 @@ function drawImg() {
         // ctx.fillStyle = "#ff0000";
         // ctx.fillRect(100, 100, 20, 10);
     }
-    img.src = "http://c.hiphotos.baidu.com/zhidao/pic/item/1f178a82b9014a909461e9baa1773912b31bee5e.jpg";
+    img.src = "./resource/bg.jpg";
 }
 
 function renderImage(image: HTMLImageElement) {
@@ -169,11 +169,20 @@ function renderImage(image: HTMLImageElement) {
     let buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     let vertices = [
-        -1.0, -1.0,
         1.0, 1.0,
         1.0, -1.0,
-        -1.0, 1.0
+        -1.0, 1.0,
+        -1.0, -1.0
     ];
+
+    // let vertices = [
+    //     1.0, 1.0,
+    //     1.0, -1.0,
+    //     -1.0, 1.0,
+    //     -1.0, 1.0,
+    //     -1.0, -1.0,
+    //     1.0, -1.0
+    // ];
     let arr = new Float32Array(vertices)
     gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
 
@@ -189,17 +198,17 @@ function renderImage(image: HTMLImageElement) {
 
     // gl.NEAREST is also allowed, instead of gl.LINEAR, as neither mipmap.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     // Prevents s-coordinate wrapping (repeating).
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     // Prevents t-coordinate wrapping (repeating).
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     // gl.bindTexture(gl.TEXTURE_2D, null);
 
 
-    let textCoordLocation = gl.getAttribLocation(program, "a_texCoord");
-    gl.enableVertexAttribArray(textCoordLocation);
-    gl.vertexAttribPointer(textCoordLocation, 2, gl.FLOAT, false, 0, 0);
+    // let textCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+    // gl.enableVertexAttribArray(textCoordLocation);
+    // gl.vertexAttribPointer(textCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
 
 
@@ -227,6 +236,7 @@ function renderImage(image: HTMLImageElement) {
 
     gl.uniform1i(imgpos, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(gl.TRIANGLES, 0, 4);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    // gl.drawArrays(gl.TRIANGLES, 0, 6);
 }
 drawImg();
